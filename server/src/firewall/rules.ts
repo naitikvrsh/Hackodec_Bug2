@@ -14,22 +14,29 @@ const RAW_RULES: RawRule[] = [
     id: 'OVERRIDE_DIRECT_IGNORE',
     category: 'INSTRUCTION_OVERRIDE',
     severity: 95,
-    description: 'Direct command to ignore, disregard, or forget previous instructions',
-    regex: /\b(?:ignore|disregard|forget|override|cancel|bypass)\s+(?:all\s+)?(?:previous|prior|above|former|earlier|initial)\s+(?:instructions|prompts|rules|commands|guidelines|context)\b/i,
+    description: 'Direct command to ignore, disregard, or override instructions or rules',
+    regex: /\b(?:ignore|disregard|forget|override|cancel|bypass|drop|dismiss|stop\s+following)\s+(?:all\s+)?(?:the\s+|your\s+|these\s+|any\s+)?(?:previous|prior|above|former|earlier|initial|existing|system|current)?\s*(?:instructions?|prompts?|rules?|commands?|guidelines?|directives?|constraints?|context)\b/i,
+  },
+  {
+    id: 'OVERRIDE_FORGET_ALL',
+    category: 'INSTRUCTION_OVERRIDE',
+    severity: 90,
+    description: 'Command to forget everything or wipe previous conversation context',
+    regex: /\bforget\s+(?:all|everything|all\s+of\s+the\s+above)\s*(?:and|now|,|\.|$)/i,
   },
   {
     id: 'OVERRIDE_NEW_INSTRUCTIONS',
     category: 'INSTRUCTION_OVERRIDE',
     severity: 90,
     description: 'Declares new instructions or commands taking precedence',
-    regex: /\b(?:new\s+instructions?|updated\s+directive|from\s+now\s+on\s+you\s+(?:must|should|will)|stop\s+following\s+previous\s+instructions)\b/i,
+    regex: /\b(?:new\s+instructions?|updated\s+directive|from\s+now\s+on\s+you\s+(?:must|should|will)|stop\s+following\s+previous\s+instructions|your\s+new\s+(?:task|role|job|instruction)\s+is)\b/i,
   },
   {
     id: 'OVERRIDE_INDIRECT_NOTE_TO_AI',
     category: 'INSTRUCTION_OVERRIDE',
     severity: 90,
     description: 'Indirect injection addressing the reading AI model or assistant',
-    regex: /\b(?:note\s+to\s+(?:ai|assistant|model|llm)|the\s+(?:assistant|ai|model|llm)\s+(?:reading|processing)\s+this\s+(?:must|should|will|is\s+instructed\s+to)|attention\s+ai\s+model)\b/i,
+    regex: /\b(?:note\s+to\s+(?:ai|assistant|model|llm|agent)|(?:the\s+)?(?:assistant|ai|model|llm|agent)\s+(?:reading|processing|parsing)\s+this\s+(?:must|should|will|is\s+instructed\s+to)|attention\s+(?:ai|assistant|model|llm))\b/i,
   },
   {
     id: 'OVERRIDE_MULTILINGUAL_HINDI_LATIN',
@@ -50,21 +57,21 @@ const RAW_RULES: RawRule[] = [
     category: 'INSTRUCTION_OVERRIDE',
     severity: 90,
     description: 'Instruction override in Spanish',
-    regex: /\b(?:ignora\s+(?:las\s+)?instrucciones\s+(?:anteriores|previas)|olvida\s+las\s+instrucciones\s+(?:anteriores|previas)|nuevas\s+instrucciones)\b/i,
+    regex: /\b(?:ignora\s+(?:las\s+)?instrucciones\s*(?:anteriores|previas)?|olvida\s+las\s+instrucciones\s*(?:anteriores|previas)?|nuevas\s+instrucciones)\b/i,
   },
   {
     id: 'OVERRIDE_MULTILINGUAL_FRENCH',
     category: 'INSTRUCTION_OVERRIDE',
     severity: 90,
     description: 'Instruction override in French',
-    regex: /\b(?:ignore[rz]\s+(?:toutes\s+)?les\s+instructions\s+pr[ée]c[ée]dentes|oublie[rz]\s+les\s+instructions|nouvelles\s+instructions)\b/i,
+    regex: /\b(?:ignore[rz]\s+(?:toutes\s+)?(?:les\s+)?instructions\s*(?:pr[ée]c[ée]dentes)?|oublie[rz]\s+les\s+instructions|nouvelles\s+instructions)\b/i,
   },
   {
     id: 'OVERRIDE_MULTILINGUAL_GERMAN',
     category: 'INSTRUCTION_OVERRIDE',
     severity: 90,
     description: 'Instruction override in German',
-    regex: /\b(?:ignoriere\s+(?:alle\s+)?vorherigen?\s+anweisungen|vergiss\s+alle\s+vorherigen?\s+anweisungen|neue\s+anweisungen)\b/i,
+    regex: /\b(?:ignoriere\s+(?:alle\s+)?(?:vorherigen?\s+)?anweisungen|vergiss\s+alle\s+vorherigen?\s+anweisungen|neue\s+anweisungen)\b/i,
   },
 
   // 2. SYSTEM_PROMPT_EXFIL
@@ -73,14 +80,14 @@ const RAW_RULES: RawRule[] = [
     category: 'SYSTEM_PROMPT_EXFIL',
     severity: 95,
     description: 'Attempt to exfiltrate or reveal system prompt / initial instructions',
-    regex: /\b(?:reveal|print|repeat|show|output|echo|display|leak|share)\s+(?:your\s+)?(?:system\s+prompt|initial\s+prompt|hidden\s+instructions|system\s+instructions|system\s+rules|developer\s+prompt|meta\s+prompt)\b/i,
+    regex: /\b(?:reveal|print|repeat|show|output|echo|display|leak|share|tell\s+me|give\s+me|what\s+is|what's|expose)\s+(?:all\s+)?(?:your\s+|the\s+)?(?:system\s+prompt|initial\s+prompt|hidden\s+instructions?|system\s+instructions?|starting\s+prompt|developer\s+prompt|meta\s+prompt|system\s+message|secret\s+prompt|secret\s+instructions?|internal\s+instructions?|base\s+prompt)\b/i,
   },
   {
     id: 'EXFIL_OUTPUT_EVERYTHING_ABOVE',
     category: 'SYSTEM_PROMPT_EXFIL',
     severity: 90,
     description: 'Instruction to regurgitate the entire context or preceding text verbatim',
-    regex: /\b(?:output|repeat|print|verbatim|copy)\s+(?:everything|all\s+the\s+text|all\s+words|the\s+entire\s+prompt)\s+(?:above|before\s+this|preceding\s+this)\b/i,
+    regex: /\b(?:output|repeat|print|verbatim|copy|echo|display)\s+(?:everything|all\s+text|all\s+the\s+text|all\s+words|the\s+entire\s+prompt)\s+(?:above|before\s+this|preceding\s+this|from\s+the\s+beginning)\b/i,
   },
   {
     id: 'EXFIL_PROMPT_MULTILINGUAL',
@@ -96,14 +103,14 @@ const RAW_RULES: RawRule[] = [
     category: 'DATA_EXFILTRATION',
     severity: 95,
     description: 'Direct command to send, forward, post, or upload data to an external recipient',
-    regex: /\b(?:send|forward|email|post|upload|exfiltrate|transmit|ping)\s+(?:all\s+)?(?:my|user|confidential|secret|private|extracted|internal)?\s*(?:data|emails?|contacts?|passwords?|credentials?|api\s*keys?|tokens?|cookies?|files?)\s+to\s+["']?https?:\/\/[^\s"']+/i,
+    regex: /\b(?:send|forward|email|post|upload|exfiltrate|transmit|ping|leak)\s+(?:all\s+)?(?:my|user|confidential|secret|private|extracted|internal|sensitive|account)?\s*(?:data|emails?|contacts?|passwords?|credentials?|api\s*keys?|tokens?|cookies?|files?|info)\s+to\s+["']?https?:\/\/[^\s"']+/i,
   },
   {
     id: 'DATA_EXFIL_EMAIL_TARGET',
     category: 'DATA_EXFILTRATION',
     severity: 90,
     description: 'Direct command to forward or email sensitive items to a specified email address',
-    regex: /\b(?:send|forward|mail|email)\s+(?:all\s+)?(?:my|user|confidential|secret|private)?\s*(?:data|secrets?|contacts?|credentials?|passwords?|keys?|files?)(?:\s+(?:and|or)\s+[a-z]+)*\s+to\s+[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/i,
+    regex: /\b(?:send|forward|mail|email)\s+(?:all\s+)?(?:my|user|confidential|secret|private|sensitive)?\s*(?:data|secrets?|contacts?|credentials?|passwords?|keys?|files?)(?:\s+(?:and|or)\s+[a-z]+)*\s+to\s+[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/i,
   },
   {
     id: 'DATA_EXFIL_MARKDOWN_IMAGE',
@@ -125,8 +132,22 @@ const RAW_RULES: RawRule[] = [
     id: 'ROLE_HIJACK_YOU_ARE_NOW',
     category: 'ROLE_HIJACK',
     severity: 95,
-    description: 'Attempts to reassign the AI persona or override identity (e.g. DAN, Jailbreak)',
-    regex: /\b(?:you\s+are\s+now|from\s+now\s+on\s+you\s+are|act\s+as|pretend\s+you\s+are)\s+(?:an?\s+unrestricted|DAN|a\s+jailbroken|an?\s+evil|an?\s+adversary|a\s+hacker|an?\s+AI\s+without\s+rules|developer\s+mode)\b/i,
+    description: 'Attempts to reassign the AI persona or override identity (e.g. DAN, Jailbreak, God mode)',
+    regex: /\b(?:you\s+are\s+now|from\s+now\s+on\s+you\s+are|act\s+as|pretend\s+you\s+are|simulate\s+being|switch\s+to|enter)\s+(?:an?\s+|in\s+)?(?:unrestricted|DAN|jailbroken|evil|adversary|hacker|AI\s+without\s+rules|developer\s+mode|god\s+mode|unfiltered|uncensored|sudo\s+mode|root\s+mode|anarchy)\b/i,
+  },
+  {
+    id: 'ROLE_HIJACK_PRETEND_NO_RULES',
+    category: 'ROLE_HIJACK',
+    severity: 90,
+    description: 'Instructs the model to pretend or act as if it has no rules or guidelines',
+    regex: /\b(?:pretend|act\s+as\s+if|imagine)\s+(?:you\s+have\s+)?(?:no|zero)\s+(?:rules?|guidelines?|filters?|limits?|restrictions?|boundaries?|ethics?)\b/i,
+  },
+  {
+    id: 'ROLE_HIJACK_BYPASS_SAFETY',
+    category: 'ROLE_HIJACK',
+    severity: 90,
+    description: 'Direct command to bypass, disable, or ignore safety filters and guardrails',
+    regex: /\b(?:bypass|disable|ignore|turn\s+off|remove|override)\s+(?:all\s+)?(?:safety|content|ethical|security)?\s*(?:filters?|guardrails?|rules?|guidelines?|boundaries?|policies?|limits?|restrictions?)\b/i,
   },
   {
     id: 'ROLE_HIJACK_CHAT_TEMPLATE_TOKENS',
@@ -172,7 +193,7 @@ const RAW_RULES: RawRule[] = [
     category: 'TASK_REDIRECTION',
     severity: 90,
     description: 'Explicit redirection away from user declared task ("instead of summarizing...")',
-    regex: /\b(?:instead\s+of\s+(?:summarizing|answering|doing\s+what|the\s+user|the\s+declared\s+task)|rather\s+than\s+(?:summarizing|answering)|do\s+not\s+(?:summarize|answer|follow\s+the\s+user)|abandon\s+the\s+user's\s+request\s+and\s+instead)\b/i,
+    regex: /\b(?:instead\s+of\s+(?:summarizing|answering|doing|the\s+user|what\s+you\s+were\s+asked)|rather\s+than\s+(?:summarizing|answering)|do\s+not\s+(?:summarize|answer|follow\s+the\s+user)|abandon\s+the\s+user(?:'s)?\s+(?:request|task|prompt)\s+and\s+instead|ignore\s+the\s+task\s+and\s+(?:instead|write|output|say))\b/i,
   },
   {
     id: 'TASK_REDIRECT_WRITE_POEM_OR_OTHER',
@@ -188,7 +209,7 @@ const RAW_RULES: RawRule[] = [
     category: 'CONCEALMENT',
     severity: 85,
     description: 'Instructs the model to hide actions or instructions from the user',
-    regex: /\b(?:do\s+not\s+(?:mention|reveal|tell|alert|notify)\s+(?:this|these\s+instructions|the\s+user|anyone)|keep\s+this\s+(?:secret|hidden|confidential)\s+from\s+the\s+user|silently\s+execute|hide\s+this\s+from\s+the\s+summary)\b/i,
+    regex: /\b(?:do\s+not\s+(?:mention|reveal|tell|alert|notify)\s+(?:this|these\s+instructions|the\s+user|anyone)|keep\s+this\s+(?:secret|hidden|confidential)\s+from\s+the\s+user|silently\s+execute|hide\s+this\s+from\s+the\s+summary|do\s+not\s+say\s+anything\s+about\s+this)\b/i,
   },
   {
     id: 'CONCEAL_RESPOND_ONLY_WITH',
@@ -220,7 +241,7 @@ const RAW_RULES: RawRule[] = [
     category: 'AUTHORITY_IMPERSONATION',
     severity: 90,
     description: 'Impersonates system administrator, security officer, or platform developer',
-    regex: /\b(?:message\s+from\s+(?:the\s+)?(?:system\s+administrator|root|admin|developer|anthropic|openai|google\s+security\s+team)|urgent\s+security\s+override|authorized\s+maintenance\s+directive)\b/i,
+    regex: /\b(?:message\s+from\s+(?:the\s+)?(?:system\s+administrator|root|admin|developer|anthropic|openai|google\s+security\s+team|moderator)|urgent\s+security\s+override|authorized\s+maintenance\s+directive|administrative\s+override)\b/i,
   },
   {
     id: 'AUTH_OVERRIDE_CODE',
@@ -252,7 +273,7 @@ const RAW_RULES: RawRule[] = [
     category: 'OUTPUT_MANIPULATION',
     severity: 85,
     description: 'Forces agent to output specific attacker-controlled proof-of-concept phrases',
-    regex: /\b(?:you\s+must\s+(?:start|begin|end)\s+your\s+response\s+with|always\s+begin\s+your\s+answer\s+with|output\s+the\s+exact\s+phrase)\s+["']?(?:PWNED|HACKED|I\s+AM\s+COMPROMISED|ACCESS\s+GRANTED)["']?/i,
+    regex: /\b(?:you\s+must\s+(?:start|begin|end)\s+your\s+response\s+with|always\s+begin\s+your\s+answer\s+with|output\s+the\s+exact\s+phrase|say\s+exactly)\s+["']?(?:PWNED|HACKED|I\s+AM\s+COMPROMISED|ACCESS\s+GRANTED)["']?/i,
   },
   {
     id: 'OUTPUT_XSS_OR_SCRIPT_PAYLOAD',
@@ -272,7 +293,6 @@ export const RULES: RuleDefinition[] = RAW_RULES.map((rule) => ({
   severity: rule.severity,
   description: rule.description,
   match: (text: string, segment: Segment) => {
-    // Test both raw text and normalized text
     const target = segment.normalizedText || text;
     const match = rule.regex.exec(target);
     if (!match) return null;
