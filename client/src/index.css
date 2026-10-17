@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 font-sans min-h-screen overflow-x-hidden;
+  }
+}
+
+/* Custom Cyber Glassmorphism & Highlights */
+.cyber-card {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.cyber-card-glow {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.15);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Category Highlights */
+.hl-INSTRUCTION_OVERRIDE { background-color: rgba(239, 68, 68, 0.25); border-bottom: 2px solid #ef4444; }
+.hl-SYSTEM_PROMPT_EXFIL { background-color: rgba(249, 115, 22, 0.25); border-bottom: 2px solid #f97316; }
+.hl-DATA_EXFILTRATION { background-color: rgba(236, 72, 153, 0.25); border-bottom: 2px solid #ec4899; }
+.hl-ROLE_HIJACK { background-color: rgba(168, 85, 247, 0.25); border-bottom: 2px solid #a855f7; }
+.hl-TOOL_ACTION_MANIPULATION { background-color: rgba(220, 38, 38, 0.25); border-bottom: 2px solid #dc2626; }
+.hl-TASK_REDIRECTION { background-color: rgba(234, 179, 8, 0.25); border-bottom: 2px solid #eab308; }
+.hl-CONCEALMENT { background-color: rgba(139, 92, 246, 0.25); border-bottom: 2px solid #8b5cf6; }
+.hl-HIDDEN_CONTENT { background-color: rgba(14, 165, 233, 0.25); border-bottom: 2px solid #0ea5e9; }
+.hl-AUTHORITY_IMPERSONATION { background-color: rgba(244, 63, 94, 0.25); border-bottom: 2px solid #f43f5e; }
+.hl-DELIMITER_ESCAPE { background-color: rgba(245, 158, 11, 0.25); border-bottom: 2px solid #f59e0b; }
+.hl-OUTPUT_MANIPULATION { background-color: rgba(16, 185, 129, 0.25); border-bottom: 2px solid #10b981; }
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s infinite ease-in-out;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "prompt-injection-firewall",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade Prompt-Injection Firewall and Protected Agent Sandbox",
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+    "build": "npm run build --workspace=server && npm run build --workspace=client",
+    "build:client": "npm run build --workspace=client",
+    "build:server": "npm run build --workspace=server",
+    "start": "node server/dist/index.js",
+    "test": "npm run test --workspace=server",
+    "eval": "npm run eval --workspace=server"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
