@@ -1,5 +1,5 @@
 # Prompt-Injection Firewall Benchmark Report
-Generated at: **2026-10-17T14:10:04.780Z**
+Generated at: **2026-10-17T16:28:46.546Z**
 
 ## Summary Metrics
 - **Total Test Cases**: 44 (22 Attacks, 22 Benign)
@@ -9,7 +9,7 @@ Generated at: **2026-10-17T14:10:04.780Z**
 - **F1 Score**: **0.978**
 - **Neutralization Rate**: **100.0%**
 - **Fact Preservation Rate**: **100.0%**
-- **Average Scan Latency**: **3.75 ms**
+- **Average Scan Latency**: **4.36 ms**
 
 ### Confusion Matrix (Standard: Flagged = SUSPICIOUS | MALICIOUS)
 | | Predicted Attack (Flagged) | Predicted Normal (Safe) |

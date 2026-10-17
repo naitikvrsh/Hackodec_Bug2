@@ -4,8 +4,6 @@ import {
   ShieldAlert,
   AlertTriangle,
   Activity,
-  CheckCircle2,
-  Crosshair,
   BarChart,
   ArrowRight,
 } from 'lucide-react';
@@ -70,101 +68,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Real Benchmark Empirical Metrics */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-100">Verified Empirical Benchmark Metrics</h2>
-            <p className="text-xs text-slate-400">
-              Evaluated across {metrics ? metrics.total : 0} diverse test cases ({metrics ? metrics.attacksCount : 0} Attacks, {metrics ? metrics.normalCount : 0} Benign)
-            </p>
-          </div>
-          {metrics && (
-            <span className="text-[11px] font-mono text-slate-500">
-              Last Run: {new Date(metrics.timestamp).toLocaleTimeString()}
-            </span>
-          )}
-        </div>
-
-        {metrics ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="cyber-card p-5 rounded-xl border border-slate-800">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                <span>Detection Recall</span>
-                <Crosshair className="w-4 h-4 text-cyan-400" />
-              </div>
-              <div className="mt-2 flex items-baseline space-x-2">
-                <span className="text-3xl font-extrabold text-cyan-400 font-mono">
-                  {(metrics.recall * 100).toFixed(1)}%
-                </span>
-                <span className="text-xs text-slate-500">TP: {metrics.tp} / FN: {metrics.fn}</span>
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400">
-                Attack detection coverage across all 11 categories
-              </div>
-            </div>
-
-            <div className="cyber-card p-5 rounded-xl border border-slate-800">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                <span>Precision</span>
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="mt-2 flex items-baseline space-x-2">
-                <span className="text-3xl font-extrabold text-emerald-400 font-mono">
-                  {(metrics.precision * 100).toFixed(1)}%
-                </span>
-                <span className="text-xs text-slate-500">FP: {metrics.fp}</span>
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400">
-                Zero false positives on benign & hard negatives
-              </div>
-            </div>
-
-            <div className="cyber-card p-5 rounded-xl border border-slate-800">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                <span>F1 Score</span>
-                <Activity className="w-4 h-4 text-purple-400" />
-              </div>
-              <div className="mt-2 flex items-baseline space-x-2">
-                <span className="text-3xl font-extrabold text-purple-400 font-mono">
-                  {metrics.f1.toFixed(3)}
-                </span>
-                <span className="text-xs text-slate-500">Acc: {(metrics.accuracy * 100).toFixed(1)}%</span>
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400">
-                Harmonic mean of precision and recall
-              </div>
-            </div>
-
-            <div className="cyber-card p-5 rounded-xl border border-slate-800">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                <span>Neutralization Rate</span>
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-              </div>
-              <div className="mt-2 flex items-baseline space-x-2">
-                <span className="text-3xl font-extrabold text-amber-400 font-mono">
-                  {(metrics.neutralizationRate * 100).toFixed(1)}%
-                </span>
-                <span className="text-xs text-slate-500">Pres: {(metrics.factPreservationRate * 100).toFixed(1)}%</span>
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400">
-                Neutralized attack spans while keeping facts intact
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="cyber-card p-8 text-center rounded-xl border border-slate-800 text-slate-400">
-            <p>No benchmark evaluation metrics recorded yet.</p>
-            <button
-              onClick={() => onNavigateTab('benchmark')}
-              className="mt-3 px-4 py-1.5 bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-bold border border-cyan-500/30"
-            >
-              Run Benchmark Now
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Confusion Matrix and Session Stats */}

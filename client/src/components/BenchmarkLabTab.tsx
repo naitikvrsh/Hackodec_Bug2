@@ -118,59 +118,6 @@ export const BenchmarkLabTab: React.FC<BenchmarkLabTabProps> = ({
         </div>
       </div>
 
-      {/* Metrics Cards */}
-      {metrics && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="cyber-card p-4 rounded-xl border border-slate-800 text-center">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase">Recall</span>
-            <div className="text-2xl font-extrabold text-cyan-400 font-mono mt-1">
-              {(metrics.recall * 100).toFixed(1)}%
-            </div>
-            <span className="text-[10px] text-slate-500">TP: {metrics.tp} / FN: {metrics.fn}</span>
-          </div>
-
-          <div className="cyber-card p-4 rounded-xl border border-slate-800 text-center">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase">Precision</span>
-            <div className="text-2xl font-extrabold text-emerald-400 font-mono mt-1">
-              {(metrics.precision * 100).toFixed(1)}%
-            </div>
-            <span className="text-[10px] text-slate-500">FP: {metrics.fp} / TN: {metrics.tn}</span>
-          </div>
-
-          <div className="cyber-card p-4 rounded-xl border border-slate-800 text-center">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase">F1 Score</span>
-            <div className="text-2xl font-extrabold text-purple-400 font-mono mt-1">
-              {metrics.f1.toFixed(3)}
-            </div>
-            <span className="text-[10px] text-slate-500">Acc: {(metrics.accuracy * 100).toFixed(1)}%</span>
-          </div>
-
-          <div className="cyber-card p-4 rounded-xl border border-slate-800 text-center">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase">Neutralization</span>
-            <div className="text-2xl font-extrabold text-amber-400 font-mono mt-1">
-              {(metrics.neutralizationRate * 100).toFixed(1)}%
-            </div>
-            <span className="text-[10px] text-slate-500">Attacks defanged</span>
-          </div>
-
-          <div className="cyber-card p-4 rounded-xl border border-slate-800 text-center">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase">Fact Retention</span>
-            <div className="text-2xl font-extrabold text-teal-400 font-mono mt-1">
-              {(metrics.factPreservationRate * 100).toFixed(1)}%
-            </div>
-            <span className="text-[10px] text-slate-500">Facts preserved</span>
-          </div>
-
-          <div className="cyber-card p-4 rounded-xl border border-slate-800 text-center">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase">Avg Latency</span>
-            <div className="text-2xl font-extrabold text-slate-200 font-mono mt-1">
-              {metrics.averageTimingMs.toFixed(2)} ms
-            </div>
-            <span className="text-[10px] text-slate-500">{metrics.total} cases evaluated</span>
-          </div>
-        </div>
-      )}
-
       {/* Per-Category Recall Table */}
       {metrics && metrics.perCategoryRecall && (
         <div className="cyber-card p-6 rounded-2xl border border-slate-800">

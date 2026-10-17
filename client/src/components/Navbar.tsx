@@ -6,18 +6,16 @@ import {
   BarChart3,
   Sliders,
   Info,
-  Cpu,
-  CheckCircle2,
 } from 'lucide-react';
 import { ConfigResponse } from '../types';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  config: ConfigResponse | null;
+  config?: ConfigResponse | null;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, config }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'scanner', label: 'Scanner', icon: Search },
@@ -26,9 +24,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, config 
     { id: 'activity', label: 'Activity & Config', icon: Sliders },
     { id: 'about', label: 'About & Limitations', icon: Info },
   ];
-
-  const detectionModeText = config?.llmStatus.available ? 'Rules + LLM' : 'Rules Only';
-  const agentModeText = config?.llmStatus.available ? 'Gemini 1.5 Flash' : 'Local Extractive';
 
   return (
     <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
@@ -70,23 +65,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, config 
             })}
           </nav>
 
-          {/* Operational Status Badges */}
-          <div className="hidden lg:flex items-center space-x-3">
-            <div className="flex items-center space-x-2 px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-xs">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-slate-400">Detection:</span>
-              <span className="font-semibold text-slate-200">{detectionModeText}</span>
-            </div>
-
-            <div className="flex items-center space-x-2 px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-xs">
-              <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-slate-400">Agent:</span>
-              <span className="font-semibold text-slate-200">{agentModeText}</span>
-            </div>
-          </div>
         </div>
 
         {/* Mobile Nav row */}
