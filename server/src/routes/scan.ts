@@ -48,6 +48,8 @@ router.post('/', async (req, res, next) => {
       timing_ms: result.timingMs,
       detection_mode: result.detectionMode,
       report: result.report,
+      mlTelemetry: result.mlTelemetry,
+      detectionComponents: result.detectionComponents,
     });
   } catch (err) {
     next(err);

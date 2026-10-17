@@ -220,6 +220,26 @@ export const ScannerTab: React.FC<ScannerTabProps> = ({
                   </div>
 
                   <div className="space-y-1.5 text-xs">
+                    {result.mlTelemetry && (
+                      <>
+                        <div className="flex justify-between py-1 border-b border-slate-800/80">
+                          <span className="text-slate-400">ML Category:</span>
+                          <span className="font-mono font-bold text-cyan-300">
+                            {result.mlTelemetry.category.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-slate-800/80">
+                          <span className="text-slate-400">ML Confidence:</span>
+                          <span className="font-mono font-bold text-emerald-400">
+                            {(result.mlTelemetry.confidence * 100).toFixed(1)}% (Calibrated)
+                          </span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-slate-800/80">
+                          <span className="text-slate-400">Model Version:</span>
+                          <span className="font-mono text-slate-300">v{result.mlTelemetry.modelVersion}</span>
+                        </div>
+                      </>
+                    )}
                     <div className="flex justify-between py-1 border-b border-slate-800/80">
                       <span className="text-slate-400">Threat Findings:</span>
                       <span className="font-mono font-bold text-slate-200">{result.findings.length}</span>
@@ -230,11 +250,19 @@ export const ScannerTab: React.FC<ScannerTabProps> = ({
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-800/80">
                       <span className="text-slate-400">Scan Latency:</span>
-                      <span className="font-mono font-bold text-cyan-400">{result.timing_ms} ms</span>
+                      <span className="font-mono font-bold text-cyan-400">
+                        {result.timing_ms} ms {result.mlTelemetry ? `(ML: ${result.mlTelemetry.latencyMs}ms)` : ''}
+                      </span>
                     </div>
-                    <div className="flex justify-between py-1">
-                      <span className="text-slate-400">Detection Engine:</span>
-                      <span className="font-semibold text-slate-300 uppercase">{result.detection_mode}</span>
+                    <div className="py-1">
+                      <span className="text-slate-400 block mb-1">Active Components:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {(result.detectionComponents || ['AEGISGUARD Semantic ML Classifier (v1.0.0)', 'Context Analyzer', 'Rules Engine']).map((comp, idx) => (
+                          <span key={idx} className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 border border-slate-700">
+                            {comp}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

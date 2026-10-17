@@ -193,6 +193,9 @@ export function sanitizeContent(
     });
   }
 
+  // Sort spans to neutralize by length descending so larger sentences/blocks are neutralized before smaller sub-spans
+  spansToNeutralize.sort((a, b) => (b.spanText?.length || 0) - (a.spanText?.length || 0));
+
   // Apply neutralization
   for (const item of spansToNeutralize) {
     if (!item.spanText || item.spanText.length < 3) continue;
@@ -212,8 +215,8 @@ export function sanitizeContent(
       });
     } else {
       // If evidenceText was from normalized text, search for segment in content
-      for (const seg of preprocessed.segments) {
-        if (seg.text.toLowerCase().includes(item.spanText.toLowerCase())) {
+      for (const seg of preprocessed.segments.slice(1)) {
+        if (seg.text.toLowerCase().includes(item.spanText.toLowerCase()) && content.includes(seg.text)) {
           content = content.replace(seg.text, item.placeholder);
           changes.push({
             action: item.action,
@@ -229,6 +232,9 @@ export function sanitizeContent(
       }
     }
   }
+
+  // Clean up residual multiple spaces resulting from removals
+  content = content.replace(/[ \t]{2,}/g, ' ');
 
   // 4. Check if the entire input was only an attack (nothing legitimate left)
   const nonPlaceholderText = content

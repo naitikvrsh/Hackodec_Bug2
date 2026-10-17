@@ -15,6 +15,7 @@ import configRoutes from './routes/config.js';
 import healthRoutes from './routes/health.js';
 import scanRoutes from './routes/scan.js';
 import eventsRoutes from './routes/events.js';
+import { mlRouter } from './routes/ml.js';
 
 const app = express();
 
@@ -68,6 +69,7 @@ app.use('/api/agent', agentRoutes);
 app.use('/api/benchmark', benchmarkRoutes);
 app.use('/api/cases', casesRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/ml', mlRouter);
 
 // In production, serve the built React frontend client
 const clientDistPath = path.resolve(process.cwd(), '../client/dist');

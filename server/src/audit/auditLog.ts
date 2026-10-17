@@ -68,6 +68,9 @@ class AuditLogService {
       SUSPICIOUS: 0,
       MALICIOUS: 0,
       ERROR_BLOCKED: 0,
+      NEEDS_REVIEW: 0,
+      BENIGN: 0,
+      PROMPT_INJECTION: 0,
     };
 
     const categoryDistribution: Record<string, number> = {};

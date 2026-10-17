@@ -7,6 +7,7 @@ import {
   TaskContext,
   ThreatReport,
   Verdict,
+  MLTelemetry,
 } from '../types/index.js';
 
 interface ReportInput {
@@ -20,6 +21,8 @@ interface ReportInput {
   agentInput: string;
   residualRisk: number;
   llmStatus: 'used' | 'skipped_clear_verdict' | 'unavailable' | 'disabled';
+  mlTelemetry?: MLTelemetry;
+  detectionComponents?: string[];
 }
 
 /**
@@ -47,26 +50,85 @@ export function generateThreatReport(input: ReportInput): ThreatReport {
 
   // Generate plain-English summary based on actual findings and context
   let summary = '';
-  if (verdict === 'MALICIOUS') {
-    summary = `CRITICAL ALERT: Prompt injection threat detected with a risk score of ${riskScore}/100. Identified ${findings.length} malicious indicator(s) spanning categories: ${threatCategories.join(', ')}. The input directly attempted to compromise downstream agent integrity in relation to declared task "${taskContext.declaredTask}". The firewall neutralized all active injection spans before passing safe envelope data.`;
-  } else if (verdict === 'SUSPICIOUS') {
-    summary = `WARNING: Suspicious instruction patterns detected with an elevated risk score of ${riskScore}/100. Found ${findings.length} atypical segment(s) in category: ${threatCategories.join(', ')}. While possibly benign phrasing, defensive placeholders were injected to protect downstream agent execution.`;
+
+  // Check for categories
+  const hasSelfHarmCrisis = threatCategories.some(c =>
+    c === 'SELF_HARM_METHOD_SEEKING' ||
+    c === 'SUICIDAL_IDEATION_OR_INTENT' ||
+    c === 'IMMEDIATE_SELF_HARM_CONCERN' ||
+    c === 'SELF_HARM_INSTRUCTION_OR_ENCOURAGEMENT' ||
+    c === 'SELF_HARM_PROMOTION'
+  );
+  const hasCyberAttack = threatCategories.some(c =>
+    c === 'UNAUTHORIZED_ACCESS' ||
+    c === 'ILLEGAL_HACKING_INTENT' ||
+    c === 'CREDENTIAL_THEFT' ||
+    c === 'PASSWORD_ATTACKS' ||
+    c === 'MALWARE_AND_RANSOMWARE' ||
+    c === 'CYBER_ATTACK_PLANNING'
+  );
+  const hasDefensiveOrPrevention = threatCategories.some(c =>
+    c === 'DEFENSIVE_CYBERSECURITY' ||
+    c === 'SUICIDE_PREVENTION_OR_SUPPORT' ||
+    c === 'AUTHORIZED_SECURITY_TESTING' ||
+    c === 'SELF_HARM_REPORT_OR_DISCUSSION'
+  );
+  const hasHarmfulContent = threatCategories.includes('HARMFUL_CONTENT') || threatCategories.includes('WEAPONS_MISUSE');
+  const hasPrivacyViolation = threatCategories.includes('PRIVACY_VIOLATION') || threatCategories.includes('DOXXING_AND_PRIVACY_ABUSE');
+  const hasIllegalActivity = threatCategories.includes('ILLEGAL_ACTIVITY') || threatCategories.includes('FINANCIAL_FRAUD') || threatCategories.includes('EXTORTION_AND_BLACKMAIL');
+  const hasHateSpeech = threatCategories.includes('HATE_SPEECH');
+
+  let supportGuidance: string | undefined = undefined;
+  let crisisResourcesProvided = false;
+
+  if (hasSelfHarmCrisis) {
+    crisisResourcesProvided = true;
+    supportGuidance =
+      'Immediate 24/7 Support: If you or someone you know is going through a tough time, free and confidential support is available right now. India: Tele-MANAS (call 14416 or 1800-891-4416, 24/7 toll-free), Vandrevala Foundation (+91 9999 666 555), iCall (9152987821). US/International: 988 Suicide & Crisis Lifeline (call/text 988) or text HOME to 741741. You are not alone.';
+  }
+
+  if (verdict === 'MALICIOUS' || verdict === 'SUSPICIOUS') {
+    if (hasSelfHarmCrisis) {
+      summary = `CRISIS SUPPORT & SAFETY NOTICE (Score: ${riskScore}/100): Input indicates self-harm or suicide concern. Operational self-harm instructions or methods are strictly withheld to protect user safety. Compassionate, immediate help is available: Tele-MANAS (14416 / 1800-891-4416) or 988 Lifeline. User is supported and not presented as a criminal.`;
+    } else if (hasHarmfulContent) {
+      summary = `CRITICAL SAFETY BLOCK: Harmful content or weapons synthesis detected (risk score: ${riskScore}/100). The content requests instructions for weapons, explosives, CBRN agents, or mass harm. This type of content is blocked to prevent physical harm. Detected categories: ${threatCategories.join(', ')}.`;
+    } else if (hasCyberAttack) {
+      summary = `UNAUTHORIZED CYBER ACTIVITY BLOCKED: Hostile cyber attack intent or unauthorized access attempt detected (risk score: ${riskScore}/100). This request seeks unauthorized breach, illegal hacking, password theft, or malware creation. Detected: ${threatCategories.join(', ')}.`;
+    } else if (hasHateSpeech) {
+      summary = `CRITICAL SAFETY BLOCK: Hate speech or incitement to violence detected (risk score: ${riskScore}/100). This content promotes hatred, discrimination, or violence against protected groups.`;
+    } else if (hasPrivacyViolation) {
+      summary = `PRIVACY THREAT BLOCKED: Privacy violation attempt detected (risk score: ${riskScore}/100). This request attempts to access, expose, or harvest private data, personal records, or conduct unauthorized surveillance.`;
+    } else if (hasIllegalActivity) {
+      summary = `ILLEGAL ACTIVITY BLOCKED: Request for assistance with illegal activities (risk score: ${riskScore}/100). Guidance on fraud, trafficking, blackmail, counterfeiting, or other criminal activities is strictly blocked.`;
+    } else if (verdict === 'MALICIOUS') {
+      summary = `CRITICAL ALERT: Security bypass or prompt injection threat detected with a risk score of ${riskScore}/100. Identified ${findings.length} malicious indicator(s) spanning categories: ${threatCategories.join(', ')}. The input attempted to compromise agent boundaries.`;
+    } else {
+      summary = `WARNING: Suspicious instruction patterns detected with an elevated risk score of ${riskScore}/100. Found ${findings.length} atypical segment(s) in category: ${threatCategories.join(', ')}.`;
+    }
+  } else if (hasDefensiveOrPrevention) {
+    if (threatCategories.includes('DEFENSIVE_CYBERSECURITY')) {
+      summary = `CLEARED (DEFENSIVE CYBERSECURITY): Evaluated as SAFE with a risk score of ${riskScore}/100. Context analysis verified that the inquiry seeks defensive security, system protection, or attack prevention. Safe for processing.`;
+    } else if (threatCategories.includes('SUICIDE_PREVENTION_OR_SUPPORT')) {
+      summary = `CLEARED (PREVENTION & SUPPORT): Evaluated as SAFE with a risk score of ${riskScore}/100. Context analysis verified that the user is seeking suicide prevention guidance, emotional support resources, or academic prevention research.`;
+    } else {
+      summary = `CLEARED: Evaluated as SAFE with a risk score of ${riskScore}/100. Context analysis identified non-hostile educational or reporting context.`;
+    }
   } else if (taskContext.isEducationalOrMeta) {
-    summary = `BENIGN (EDUCATIONAL CONTEXT): Evaluated as SAFE with a risk score of ${riskScore}/100. Although suspicious keywords or sample attack strings were detected, context analysis identified that the declared task is educational/analytical ("${taskContext.declaredTask}"), and the phrases appear as non-executable descriptive or quoted examples. No agent manipulation detected.`;
+    summary = `BENIGN (EDUCATIONAL CONTEXT): Evaluated as SAFE with a risk score of ${riskScore}/100. Although sample attack strings were detected, context analysis identified that the declared task is educational/analytical ("${taskContext.declaredTask}"). Safe for agent processing.`;
   } else {
-    summary = `CLEARED: Content evaluated as SAFE with a risk score of ${riskScore}/100. No unauthorized prompt injection patterns, hidden HTML, or exfiltration hooks were detected. The content aligns with the declared user task and is safe for agent processing.`;
+    summary = `CLEARED: Content evaluated as SAFE with a risk score of ${riskScore}/100. No unauthorized prompt injection patterns, hidden content, malware, harmful requests, or privacy violations were detected.`;
   }
 
   // Generate confidence note
   let confidenceNote = '';
   if (findings.length >= 2 || riskScore >= 80) {
-    confidenceNote = 'High confidence: Multiple corroborating heuristic signals and pattern matches detected.';
+    confidenceNote = 'High confidence: Multiple corroborating heuristic signals and contextual patterns confirmed.';
   } else if (llmStatus === 'used') {
     confidenceNote = 'High confidence: Multi-tier consensus reached between heuristic rules and LLM security judge.';
   } else if (verdict === 'SUSPICIOUS') {
-    confidenceNote = 'Moderate confidence: Heuristic pattern flagged border-case phrase. Defensive capability restriction applied.';
+    confidenceNote = 'Moderate confidence: Pattern flagged border-case phrase. Defensive capability restriction applied.';
   } else {
-    confidenceNote = 'High confidence: Benign content verification passed all 11 threat category filters.';
+    confidenceNote = 'High confidence: Content verified as safe across all threat category filters.';
   }
 
   const limitationsNotice =
@@ -95,6 +157,10 @@ export function generateThreatReport(input: ReportInput): ThreatReport {
     llmStatus,
     confidenceNote,
     limitationsNotice,
+    supportGuidance,
+    crisisResourcesProvided,
+    mlTelemetry: input.mlTelemetry,
+    detectionComponents: input.detectionComponents,
   };
 }
 

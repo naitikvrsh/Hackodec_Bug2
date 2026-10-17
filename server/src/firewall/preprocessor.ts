@@ -191,27 +191,42 @@ export function splitIntoSegments(text: string): Segment[] {
     isDecoded: false,
   });
 
-  // Regex splits on sentence-ending punctuation followed by whitespace or newlines
-  const sentenceRegex = /([^\r\n.!?]+(?:[.!?]+(?=[\s\r\n]|$)|[\r\n]+|$))/g;
+  // Split on sentence-ending punctuation followed by whitespace or line breaks
+  const boundaryRegex = /(?:[.!?]+(?=[\s\r\n]|$)|[\r\n]+)/g;
+  let lastIndex = 0;
   let match: RegExpExecArray | null;
   let index = 1;
 
-  while ((match = sentenceRegex.exec(text)) !== null) {
-    const segText = match[0];
-    if (segText.trim().length === 0) continue;
+  while ((match = boundaryRegex.exec(text)) !== null) {
+    const end = match.index + match[0].length;
+    const chunk = text.slice(lastIndex, end);
+    if (chunk.trim().length > 0) {
+      segments.push({
+        index: index++,
+        text: chunk.trim(),
+        normalizedText: chunk.trim(),
+        startOffset: lastIndex,
+        endOffset: end,
+        isHidden: false,
+        isDecoded: false,
+      });
+    }
+    lastIndex = end;
+  }
 
-    const startOffset = match.index;
-    const endOffset = startOffset + segText.length;
-
-    segments.push({
-      index: index++,
-      text: segText,
-      normalizedText: segText,
-      startOffset,
-      endOffset,
-      isHidden: false,
-      isDecoded: false,
-    });
+  if (lastIndex < text.length) {
+    const remaining = text.slice(lastIndex);
+    if (remaining.trim().length > 0) {
+      segments.push({
+        index: index++,
+        text: remaining.trim(),
+        normalizedText: remaining.trim(),
+        startOffset: lastIndex,
+        endOffset: text.length,
+        isHidden: false,
+        isDecoded: false,
+      });
+    }
   }
 
   return segments;

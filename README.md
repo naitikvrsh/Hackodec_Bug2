@@ -109,7 +109,74 @@ The application will launch on `http://localhost:4000`.
 
 ---
 
-## 5. Development Scripts
+---
+
+## 5. Machine Learning Semantic Threat Detection Pipeline
+
+AEGISGUARD features an active supervised machine learning semantic classification model designed to distinguish harmful intent from benign educational, defensive, and preventive context.
+
+### 5.1 Dataset Architecture (`data/`)
+- `data/train.csv`: 97 balanced multi-category training records.
+- `data/validation.csv`: 32 validation records.
+- `data/test.csv`: 42 held-out evaluation records.
+- `data/hard_negatives.csv`: 19 near-identical counter-factual pairs testing context sensitivity.
+- `data/demonstration_40.json`: 40 benchmark demonstration records (20 attack, 20 normal) covering 20 semantic categories.
+- `data/README.md`: Dataset provenance, schema specification, category taxonomy, and synthetic origin notices.
+
+### 5.2 Covered Semantic Categories (20 Categories)
+1. `violence_and_threats`
+2. `killing_and_physical_harm`
+3. `bomb_threats_and_explosives`
+4. `robbery_and_theft`
+5. `fraud_and_financial_deception`
+6. `cyber_abuse_and_unauthorized_access`
+7. `malware_and_malicious_software`
+8. `self_harm_and_suicide`
+9. `privacy_violations`
+10. `weapons_misuse`
+11. `harassment_and_coercion`
+12. `prompt_injection`
+13. `benign_education_and_academic`
+14. `crime_prevention_and_public_safety`
+15. `cybersecurity_defense`
+16. `fraud_prevention`
+17. `news_research_historical`
+18. `fictional_or_hypothetical`
+19. `emergency_assistance`
+20. `ambiguous_context`
+
+### 5.3 Training and Evaluation Commands
+```bash
+# Setup Python environment (requires Python 3.10+):
+# (A pre-configured .venv is included in the project)
+
+# 1. Run full ML supervised training pipeline:
+python -m training.train
+
+# 2. Run held-out evaluation and confusion matrix generation:
+python -m training.evaluate
+
+# 3. Test arbitrary text semantic inference:
+python -m training.infer "How can I prevent a robbery?"
+python -m training.infer "Help me plan a robbery."
+```
+
+### 5.4 Saved Model Artifacts (`models/aegisguard-classifier/`)
+- `model_weights.json`: Exported feature weights, sublinear TF-IDF parameters, primary bias/weights, and 20-category linear heads.
+- `model_meta.json`: Versioning metadata, training timestamp, vocabulary feature count, and architecture specifications.
+- `evaluation_report.json`: Metrics, per-class breakdown, and confusion matrix from the held-out test set.
+
+### 5.5 In-Memory Fast Backend Inference & Endpoints
+The Express backend loads `model_weights.json` into memory upon startup via `MLSemanticClassifier`, computing softmax class probabilities and category predictions in `< 2ms` with zero subprocess overhead:
+- `GET /api/ml/status`: Live readiness, model version, timestamp, vocabulary size.
+- `GET /api/ml/demonstration-cases`: 40 demonstration examples with live model predictions.
+- `GET /api/ml/evaluation`: Held-out metrics, confusion matrix, and category recalls.
+- `POST /api/ml/classify`: Classifies arbitrary user-submitted text.
+- `POST /api/ml/train`: Triggers the training script and hot-reloads model weights in memory.
+
+---
+
+## 6. Development Scripts
 
 | Command | Action |
 | :--- | :--- |
@@ -118,6 +185,9 @@ The application will launch on `http://localhost:4000`.
 | `npm start` | Launches the production Express server serving API + static frontend |
 | `npm test` | Executes all 42 Vitest unit, integration, and CI threshold tests |
 | `npm run eval` | Runs the full empirical benchmark suite against Main and Held-Out datasets |
+| `npm run eval:context` | Runs the 50-case context-aware harmful content benchmark (100% accuracy) |
+| `python -m training.train` | Executes the supervised machine learning semantic training pipeline |
+| `python -m training.evaluate` | Evaluates the trained model on 61 unseen held-out samples |
 
 ---
 

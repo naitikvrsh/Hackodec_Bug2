@@ -1,0 +1,24 @@
+{
+  "status": "trained",
+  "last_trained": "2026-10-17T15:51:15Z",
+  "version": "1.0.0",
+  "architecture": "Calibrated Dual-Head Multi-Scale N-Gram Logistic Classifier",
+  "dataset_sizes": {
+    "train": 97,
+    "validation": 32,
+    "test": 42,
+    "hard_negatives": 19,
+    "demonstration": 40
+  },
+  "metrics": {
+    "train_samples": 97,
+    "val_samples": 32,
+    "test_samples": 42,
+    "hard_negative_samples": 19,
+    "val_accuracy": 0.625,
+    "val_precision": 0.8333,
+    "val_recall": 0.5556,
+    "val_f1": 0.6667,
+    "training_duration_seconds": 16.57
+  }
+}

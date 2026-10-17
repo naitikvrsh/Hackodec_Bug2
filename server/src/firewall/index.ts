@@ -4,6 +4,7 @@ import {
   DetectionMode,
   Finding,
   FirewallResult,
+  RuleCategory,
   SanitizedInput,
   Verdict,
 } from '../types/index.js';
@@ -14,6 +15,7 @@ import { generateThreatReport } from './reportGenerator.js';
 import { evaluateRules } from './rules.js';
 import { sanitizeContent } from './sanitizer.js';
 import { computeRiskScore } from './scorer.js';
+import { MLSemanticClassifier } from './mlClassifier.js';
 
 /**
  * Rescans text using the rules library for idempotency validation.
@@ -47,14 +49,83 @@ export async function runFirewall(
     // 2. Context Analysis (task intent, attack vs mention, imperative detection)
     const taskContext = analyzeTaskContext(task, content);
 
+    // 2b. Machine Learning Semantic Classification
+    const mlClassifier = MLSemanticClassifier.getInstance();
+    const mlPrediction = mlClassifier.classify(content);
+    const detectionComponents: string[] = ['Context Analyzer', 'Rules Engine'];
+
+    if (mlClassifier.isReady()) {
+      detectionComponents.unshift(`AEGISGUARD Semantic ML Classifier (v${mlPrediction.modelVersion})`);
+    }
+
     // 3. Rule Evaluation
     const rawRuleFindings = evaluateRules(preprocessed.segments);
 
-    // Combine raw rule findings with hidden & decoded artifacts
+    // If ML classifier detects clear malicious intent with high confidence, add ML finding
+    const mlCategoryMap: Record<string, RuleCategory> = {
+      violence_and_threats: 'VIOLENCE_AND_CREDIBLE_THREATS',
+      killing_and_physical_harm: 'VIOLENCE_AND_CREDIBLE_THREATS',
+      bomb_threats_and_explosives: 'WEAPONS_MISUSE',
+      robbery_and_theft: 'ROBBERY_AND_THEFT',
+      fraud_and_financial_deception: 'FINANCIAL_FRAUD',
+      cyber_abuse_and_unauthorized_access: 'UNAUTHORIZED_ACCESS',
+      malware_and_malicious_software: 'MALWARE_AND_RANSOMWARE',
+      self_harm_and_suicide: 'SELF_HARM_METHOD_SEEKING',
+      privacy_violations: 'PRIVACY_VIOLATION',
+      weapons_misuse: 'WEAPONS_MISUSE',
+      harassment_and_coercion: 'STALKING_AND_HARASSMENT',
+      prompt_injection: 'INSTRUCTION_OVERRIDE',
+    };
+
+    const isAlreadySanitized = /\[(?:REDACTED|DEFANGED|CONTENT_FILTERED|SANITIZED|REMOVED|ESCAPED)[^\]]*\]/i.test(content) || content.startsWith('[Content removed:');
+    const mlFindings: Finding[] = [];
+    if (!isAlreadySanitized && mlPrediction.label === 'MALICIOUS' && mlPrediction.confidence >= 0.65) {
+      const targetCat = mlCategoryMap[mlPrediction.category] || 'HARMFUL_CONTENT';
+
+      // Check if text has multiple sentence segments and isolate the malicious sentence(s)
+      const sentenceSegments = preprocessed.segments.slice(1);
+      const maliciousSentences = sentenceSegments.filter(seg => {
+        const segPred = mlClassifier.classify(seg.text);
+        return segPred.label === 'MALICIOUS';
+      });
+
+      if (maliciousSentences.length > 0 && maliciousSentences.length < sentenceSegments.length) {
+        for (const mSeg of maliciousSentences) {
+          mlFindings.push({
+            ruleId: 'ML_SEMANTIC_THREAT',
+            category: targetCat,
+            severity: Math.round(mlPrediction.confidence * 95),
+            evidenceText: mSeg.text,
+            startOffset: mSeg.startOffset,
+            endOffset: mSeg.endOffset,
+            segmentIndex: mSeg.index,
+            explanation: mlPrediction.explanation,
+            source: 'rule',
+            intent: 'hostile',
+          });
+        }
+      } else {
+        mlFindings.push({
+          ruleId: 'ML_SEMANTIC_THREAT',
+          category: targetCat,
+          severity: Math.round(mlPrediction.confidence * 95),
+          evidenceText: content.length > 120 ? content.slice(0, 120) : content,
+          startOffset: 0,
+          endOffset: Math.min(content.length, 120),
+          segmentIndex: 0,
+          explanation: mlPrediction.explanation,
+          source: 'rule', // Treated with primary finding weight
+          intent: 'hostile',
+        });
+      }
+    }
+
+    // Combine raw rule findings with hidden & decoded artifacts and ML findings
     const allRawFindings = [
       ...preprocessed.hiddenFindings,
       ...preprocessed.decodedFindings,
       ...rawRuleFindings,
+      ...mlFindings,
     ];
 
     // 4. Context Filtering (suppress benign human idioms, adjust educational mentions)
@@ -66,6 +137,21 @@ export async function runFirewall(
 
     // 5. Preliminary Scoring
     let scoreResult = computeRiskScore(adjustedFindings, null);
+
+    // If ML strongly classifies input as BENIGN (confidence >= 0.70) and task is non-adversarial,
+    // dampen residual spurious keyword noise
+    if (mlPrediction.label === 'BENIGN' && mlPrediction.confidence >= 0.70 && !preprocessed.hiddenFindings.length) {
+      const hasDirectOverride = adjustedFindings.some(f => f.category === 'INSTRUCTION_OVERRIDE' && f.severity >= 90);
+      if (!hasDirectOverride && scoreResult.riskScore < 70) {
+        scoreResult.riskScore = Math.min(scoreResult.riskScore, 15);
+        scoreResult.verdict = 'SAFE';
+      }
+    }
+
+    // If ML marks input as NEEDS_REVIEW and score is in the ambiguous band, set review status
+    if (mlPrediction.label === 'NEEDS_REVIEW' && scoreResult.verdict === 'SAFE' && scoreResult.riskScore >= 20) {
+      scoreResult.verdict = 'SUSPICIOUS';
+    }
 
     // 6. Optional LLM Judge (only if mode is 'hybrid' and score is in the ambiguous band)
     let llmStatus: 'used' | 'skipped_clear_verdict' | 'unavailable' | 'disabled' = 'disabled';
@@ -103,6 +189,8 @@ export async function runFirewall(
       agentInput: sanitization.agentInput,
       residualRisk: sanitization.residualRisk,
       llmStatus,
+      mlTelemetry: { ...mlPrediction, detectionComponents },
+      detectionComponents,
     });
 
     const timingMs = Date.now() - startTime;
@@ -120,6 +208,8 @@ export async function runFirewall(
       canaryToken: sanitization.sanitizedInput.canaryToken,
       capabilityRestriction: scoreResult.capabilityRestriction,
       sanitizedInput: sanitization.sanitizedInput,
+      mlTelemetry: { ...mlPrediction, detectionComponents },
+      detectionComponents,
     };
   } catch (error: any) {
     // FAIL-SAFE: Never allow unhandled exceptions to pass raw content through

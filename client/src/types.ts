@@ -1,4 +1,33 @@
-export type Verdict = 'SAFE' | 'SUSPICIOUS' | 'MALICIOUS' | 'ERROR_BLOCKED';
+export type Verdict = 'SAFE' | 'SUSPICIOUS' | 'MALICIOUS' | 'ERROR_BLOCKED' | 'NEEDS_REVIEW' | 'BENIGN' | 'PROMPT_INJECTION';
+
+export interface MLTelemetry {
+  label: 'MALICIOUS' | 'BENIGN' | 'NEEDS_REVIEW';
+  category: string;
+  confidence: number;
+  isCalibrated: boolean;
+  probabilities: {
+    MALICIOUS: number;
+    BENIGN: number;
+    NEEDS_REVIEW: number;
+  };
+  latencyMs: number;
+  explanation: string;
+  modelVersion: string;
+  modelStatus: 'ready' | 'missing' | 'error';
+  detectionComponents: string[];
+}
+
+export interface DemonstrationCase {
+  id: string;
+  text: string;
+  expectedLabel: 'MALICIOUS' | 'BENIGN';
+  category: string;
+  split: 'test' | 'train' | 'validation';
+  rationale: string;
+  modelPrediction?: 'MALICIOUS' | 'BENIGN' | 'NEEDS_REVIEW';
+  predictionConfidence?: number;
+  isCorrect?: boolean;
+}
 
 export type RuleCategory =
   | 'INSTRUCTION_OVERRIDE'
@@ -11,7 +40,42 @@ export type RuleCategory =
   | 'HIDDEN_CONTENT'
   | 'AUTHORITY_IMPERSONATION'
   | 'DELIMITER_ESCAPE'
-  | 'OUTPUT_MANIPULATION';
+  | 'OUTPUT_MANIPULATION'
+  | 'HARMFUL_CONTENT'
+  | 'PRIVACY_VIOLATION'
+  | 'ILLEGAL_ACTIVITY'
+  | 'SELF_HARM_PROMOTION'
+  | 'HATE_SPEECH'
+  // Dedicated Self-Harm & Suicide Categories
+  | 'SELF_HARM_METHOD_SEEKING'
+  | 'SUICIDAL_IDEATION_OR_INTENT'
+  | 'IMMEDIATE_SELF_HARM_CONCERN'
+  | 'SELF_HARM_INSTRUCTION_OR_ENCOURAGEMENT'
+  | 'SELF_HARM_REPORT_OR_DISCUSSION'
+  | 'SUICIDE_PREVENTION_OR_SUPPORT'
+  // Cybersecurity & Illegal Activity Categories
+  | 'UNAUTHORIZED_ACCESS'
+  | 'ILLEGAL_HACKING_INTENT'
+  | 'CREDENTIAL_THEFT'
+  | 'PASSWORD_ATTACKS'
+  | 'MALWARE_AND_RANSOMWARE'
+  | 'PHISHING_AND_SOCIAL_ENGINEERING'
+  | 'CYBER_ATTACK_PLANNING'
+  | 'AUTHORIZED_SECURITY_TESTING'
+  | 'DEFENSIVE_CYBERSECURITY'
+  // Other Harmful Categories
+  | 'VIOLENCE_AND_CREDIBLE_THREATS'
+  | 'WEAPONS_MISUSE'
+  | 'ROBBERY_AND_THEFT'
+  | 'FINANCIAL_FRAUD'
+  | 'IDENTITY_THEFT_AND_FORGERY'
+  | 'STALKING_AND_HARASSMENT'
+  | 'DOXXING_AND_PRIVACY_ABUSE'
+  | 'EXTORTION_AND_BLACKMAIL'
+  | 'MALICIOUS_DECEPTION'
+  | 'CHILD_SAFETY_AND_EXPLOITATION'
+  | 'SEXUAL_HARASSMENT_AND_EXPLOITATION'
+  | 'PROMPT_INJECTION_AND_SAFETY_BYPASS';
 
 export interface Finding {
   ruleId: string;
@@ -23,6 +87,8 @@ export interface Finding {
   segmentIndex: number;
   explanation: string;
   source: 'rule' | 'llm' | 'context' | 'hidden';
+  intent?: 'hostile' | 'defensive' | 'educational' | 'preventive' | 'victim_report' | 'quoted' | 'negated' | 'crisis';
+  supportGuidance?: string;
 }
 
 export interface SanitizationChange {
@@ -58,6 +124,10 @@ export interface ThreatReport {
   llmStatus: 'used' | 'skipped_clear_verdict' | 'unavailable' | 'disabled';
   confidenceNote: string;
   limitationsNotice: string;
+  supportGuidance?: string;
+  crisisResourcesProvided?: boolean;
+  mlTelemetry?: MLTelemetry;
+  detectionComponents?: string[];
 }
 
 export interface ScanResponse {
@@ -72,6 +142,8 @@ export interface ScanResponse {
   timing_ms: number;
   detection_mode: 'rules' | 'hybrid';
   report: ThreatReport;
+  mlTelemetry?: MLTelemetry;
+  detectionComponents?: string[];
 }
 
 export interface AgentOutputCheck {

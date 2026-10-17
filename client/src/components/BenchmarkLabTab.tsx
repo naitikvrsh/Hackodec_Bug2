@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { BenchmarkMetrics, CaseResult } from '../types';
 import { runBenchmarkApi } from '../api';
+import { MLTrainingEvalSection } from './MLTrainingEvalSection';
 
 interface BenchmarkLabTabProps {
   metrics: BenchmarkMetrics | null;
@@ -340,6 +341,9 @@ export const BenchmarkLabTab: React.FC<BenchmarkLabTabProps> = ({
           </div>
         </div>
       )}
+
+      {/* Dedicated Machine Learning Training Dataset & Evaluation Section */}
+      <MLTrainingEvalSection onOpenInScanner={onOpenInScanner} />
     </div>
   );
 };

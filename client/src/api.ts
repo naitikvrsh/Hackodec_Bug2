@@ -134,3 +134,36 @@ export async function downloadReportHtml(report: ThreatReport) {
     URL.revokeObjectURL(url);
   }
 }
+
+export async function fetchMLStatus(): Promise<any> {
+  const res = await fetch(`${API_BASE}/ml/status`);
+  if (!res.ok) throw new Error('Failed to fetch ML status');
+  return res.json();
+}
+
+export async function fetchMLDemonstrationCases(): Promise<{
+  total: number;
+  attackCount: number;
+  normalCount: number;
+  accuracy: number;
+  cases: any[];
+}> {
+  const res = await fetch(`${API_BASE}/ml/demonstration-cases`);
+  if (!res.ok) throw new Error('Failed to fetch demonstration cases');
+  return res.json();
+}
+
+export async function fetchMLEvaluationReport(): Promise<any> {
+  const res = await fetch(`${API_BASE}/ml/evaluation`);
+  if (!res.ok) throw new Error('Failed to fetch ML evaluation report');
+  return res.json();
+}
+
+export async function triggerMLRetrain(): Promise<any> {
+  const res = await fetch(`${API_BASE}/ml/train`, { method: 'POST' });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Retraining failed');
+  }
+  return res.json();
+}
