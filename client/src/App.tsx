@@ -5,7 +5,6 @@ import { ScannerTab } from './components/ScannerTab';
 import { ProtectedAgentTab } from './components/ProtectedAgentTab';
 import { BenchmarkLabTab } from './components/BenchmarkLabTab';
 import { ActivityConfigTab } from './components/ActivityConfigTab';
-import { AboutTab } from './components/AboutTab';
 import { AuditStats, BenchmarkMetrics, ConfigResponse, PresetSample } from './types';
 import { getConfig, getEvents, getLatestBenchmark, getPresetsAndCases } from './api';
 
@@ -78,8 +77,6 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'activity' && <ActivityConfigTab config={config} />}
-
-        {activeTab === 'about' && <AboutTab />}
       </main>
 
       <footer className="border-t border-slate-900 bg-slate-950/60 py-6 text-center text-xs text-slate-500 font-mono">

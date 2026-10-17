@@ -5,7 +5,6 @@ import {
   Bot,
   BarChart3,
   Sliders,
-  Info,
 } from 'lucide-react';
 import { ConfigResponse } from '../types';
 
@@ -22,7 +21,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     { id: 'agent', label: 'Protected Agent', icon: Bot },
     { id: 'benchmark', label: 'Benchmark Lab', icon: Shield },
     { id: 'activity', label: 'Activity & Config', icon: Sliders },
-    { id: 'about', label: 'About & Limitations', icon: Info },
   ];
 
   return (
@@ -37,7 +35,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-extrabold text-lg tracking-wider text-slate-100 font-mono">AEGIS<span className="text-cyan-400">GUARD</span></span>
-                <span className="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full">v1.0</span>
               </div>
               <div className="text-[11px] text-slate-400">Production Prompt-Injection Firewall</div>
             </div>
