@@ -6,5 +6,8 @@ build/
 *.log
 .DS_Store
 coverage/
+.venv/
+__pycache__/
+*.pyc
 data/results/latest.json
 !data/results/.gitkeep
