@@ -1,12 +1,13 @@
 import path from 'path';
 import { runBenchmark, saveBenchmarkResults } from './evaluator.js';
+import { getDataDir } from '../config.js';
 
 async function main() {
   console.log('===============================================================');
   console.log('   PROMPT-INJECTION FIREWALL: EMPIRICAL BENCHMARK EVALUATION   ');
   console.log('===============================================================\n');
 
-  const rootDataDir = path.resolve(process.cwd(), '../data');
+  const rootDataDir = getDataDir();
   const resultsDir = path.resolve(rootDataDir, 'results');
 
   // 1. Evaluate Main Dataset

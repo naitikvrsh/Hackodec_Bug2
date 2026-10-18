@@ -9,7 +9,11 @@ import {
   ThreatReport,
 } from './types';
 
-const API_BASE = '/api';
+// Support production backend URL from environment variable (e.g. Render Web Service).
+// In local development, falls back to '/api' which Vite proxies to http://localhost:4000.
+const rawBase = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '') as string;
+const cleanBase = rawBase.replace(/\/+$/, '');
+const API_BASE = cleanBase ? (cleanBase.endsWith('/api') ? cleanBase : `${cleanBase}/api`) : '/api';
 
 export async function scanContent(
   task: string,

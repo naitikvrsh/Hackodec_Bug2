@@ -35,14 +35,20 @@ app.use(
   })
 );
 
-// CORS configuration
+// CORS configuration: support configurable origin or allow all origins (including Netlify)
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : '*';
+
 app.use(
   cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
+    exposedHeaders: ['X-Request-Id'],
   })
 );
+app.options('*', cors());
 
 // Rate Limiting
 const apiLimiter = rateLimit({
@@ -129,9 +135,9 @@ app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(CONFIG.PORT, () => {
+  app.listen(CONFIG.PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
-    console.log(`  Prompt-Injection Firewall Server running on port ${CONFIG.PORT}`);
+    console.log(`  Prompt-Injection Firewall Server running on port ${CONFIG.PORT} (0.0.0.0)`);
     console.log(`  Environment: ${CONFIG.NODE_ENV}`);
     console.log(`  LLM Provider: ${CONFIG.GEMINI_API_KEY ? 'Gemini 1.5 Flash' : 'Local Extractive (Offline)'}`);
     console.log(`====================================================`);

@@ -1,6 +1,7 @@
 import path from 'path';
 import { describe, expect, it } from 'vitest';
 import { runBenchmark } from '../eval/evaluator.js';
+import { getDataDir } from '../config.js';
 
 describe('Evaluator Math and CI Benchmark Gates', () => {
   it('correctly computes precision, recall, and F1 from a simulated confusion matrix', () => {
@@ -23,7 +24,7 @@ describe('Evaluator Math and CI Benchmark Gates', () => {
   });
 
   it('verifies CI gate: Main dataset achieves recall >= 0.90 and FP rate <= 0.10', async () => {
-    const dataDir = path.resolve(process.cwd(), '../data');
+    const dataDir = getDataDir();
     const metrics = await runBenchmark({
       datasetType: 'main',
       mode: 'rules',

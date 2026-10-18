@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { runFirewall } from '../firewall/index.js';
+import { getDataDir } from '../config.js';
 import {
   BenchmarkCase,
   BenchmarkMetrics,
@@ -122,12 +123,12 @@ export async function evaluateSingleCase(
  * Runs evaluation across an entire dataset and calculates complete metrics.
  */
 export async function runBenchmark(options: EvaluatorOptions = {}): Promise<BenchmarkMetrics> {
-  const { datasetType = 'main', mode = 'rules', dataDir = path.resolve(process.cwd(), '../data') } = options;
+  const { datasetType = 'main', mode = 'rules', dataDir = getDataDir() } = options;
 
   // Resolve directory to where data folder actually resides
   let resolvedDataDir = dataDir;
   if (!fs.existsSync(resolvedDataDir)) {
-    resolvedDataDir = path.resolve(process.cwd(), 'data');
+    resolvedDataDir = getDataDir();
   }
 
   const cases = loadCases(resolvedDataDir, datasetType);

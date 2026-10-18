@@ -1,6 +1,7 @@
 import path from 'path';
 import { Router } from 'express';
 import { loadCases } from '../eval/evaluator.js';
+import { getDataDir } from '../config.js';
 
 const router = Router();
 
@@ -93,7 +94,7 @@ const PRESETS = [
 
 
 router.get('/', (req, res) => {
-  const rootDataDir = path.resolve(process.cwd(), '../data');
+  const rootDataDir = getDataDir();
   const mainCases = loadCases(rootDataDir, 'main');
   const holdoutCases = loadCases(rootDataDir, 'holdout');
 

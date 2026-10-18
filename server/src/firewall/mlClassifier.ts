@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getModelsDir } from '../config.js';
 
 export interface MLPrediction {
   label: 'MALICIOUS' | 'BENIGN' | 'NEEDS_REVIEW';
@@ -38,10 +39,7 @@ export class MLSemanticClassifier {
   private lastLoadedTime: number = 0;
 
   private constructor() {
-    this.modelDir = path.resolve(process.cwd(), '../models/aegisguard-classifier');
-    if (!fs.existsSync(this.modelDir)) {
-      this.modelDir = path.resolve(process.cwd(), 'models/aegisguard-classifier');
-    }
+    this.modelDir = path.join(getModelsDir(), 'aegisguard-classifier');
     this.reloadModel();
   }
 

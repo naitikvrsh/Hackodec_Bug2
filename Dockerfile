@@ -19,6 +19,7 @@ RUN npm ci
 COPY server/ ./server/
 COPY client/ ./client/
 COPY data/ ./data/
+COPY models/ ./models/
 
 # Build server and client
 RUN npm run build:server
@@ -46,13 +47,14 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/server/dist ./server/dist
 COPY --from=builder /app/client/dist ./client/dist
 COPY --from=builder /app/data ./data
+COPY --from=builder /app/models ./models
 
 # Expose server port
 EXPOSE 4000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:4000/api/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-4000}/api/health || exit 1
 
 # Start the unified Express application
 CMD ["node", "server/dist/index.js"]

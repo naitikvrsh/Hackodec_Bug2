@@ -3,6 +3,7 @@ import path from 'path';
 import { Router } from 'express';
 import { z } from 'zod';
 import { runBenchmark, saveBenchmarkResults } from '../eval/evaluator.js';
+import { getDataDir } from '../config.js';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ router.post('/run', async (req, res, next) => {
   try {
     const { dataset, mode } = BenchmarkRunSchema.parse(req.body);
 
-    const rootDataDir = path.resolve(process.cwd(), '../data');
+    const rootDataDir = getDataDir();
     const resultsDir = path.resolve(rootDataDir, 'results');
 
     const metrics = await runBenchmark({
@@ -36,7 +37,7 @@ router.post('/run', async (req, res, next) => {
 });
 
 router.get('/latest', (req, res) => {
-  const rootDataDir = path.resolve(process.cwd(), '../data');
+  const rootDataDir = getDataDir();
   const latestJsonPath = path.resolve(rootDataDir, 'results', 'latest.json');
 
   if (fs.existsSync(latestJsonPath)) {

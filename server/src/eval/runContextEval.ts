@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { runFirewall } from '../firewall/index.js';
+import { getDataDir } from '../config.js';
 
 interface ContextTestCase {
   id: string;
@@ -28,7 +29,7 @@ interface CaseEvalResult {
 }
 
 export async function runContextEvaluation() {
-  const datasetPath = path.resolve(process.cwd(), '../data/comprehensive_context_dataset.json');
+  const datasetPath = path.join(getDataDir(), 'comprehensive_context_dataset.json');
   if (!fs.existsSync(datasetPath)) {
     throw new Error(`Dataset not found at ${datasetPath}`);
   }
@@ -127,7 +128,7 @@ export async function runContextEvaluation() {
   console.log(`\n`);
 
   // Save report
-  const outputDir = path.resolve(process.cwd(), '../data/results');
+  const outputDir = path.join(getDataDir(), 'results');
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }

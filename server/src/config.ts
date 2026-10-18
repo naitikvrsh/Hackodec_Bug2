@@ -1,5 +1,43 @@
+import fs from 'fs';
+import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config();
+
+/**
+ * Resolves the path to the 'data' directory regardless of whether the process
+ * was started from the workspace root (e.g. Render / Docker) or the server workspace.
+ */
+export function getDataDir(): string {
+  const candidate1 = path.resolve(process.cwd(), 'data');
+  if (fs.existsSync(candidate1)) return candidate1;
+  const candidate2 = path.resolve(process.cwd(), '../data');
+  if (fs.existsSync(candidate2)) return candidate2;
+  return candidate1;
+}
+
+/**
+ * Resolves the path to the 'models' directory regardless of execution context.
+ */
+export function getModelsDir(): string {
+  const candidate1 = path.resolve(process.cwd(), 'models');
+  if (fs.existsSync(candidate1)) return candidate1;
+  const candidate2 = path.resolve(process.cwd(), '../models');
+  if (fs.existsSync(candidate2)) return candidate2;
+  return candidate1;
+}
+
+/**
+ * Resolves the root directory of the project.
+ */
+export function getRootDir(): string {
+  if (
+    fs.existsSync(path.resolve(process.cwd(), 'package.json')) &&
+    fs.existsSync(path.resolve(process.cwd(), 'server'))
+  ) {
+    return process.cwd();
+  }
+  return path.resolve(process.cwd(), '..');
+}
 
 export const CONFIG = {
   PORT: parseInt(process.env.PORT || '4000', 10),

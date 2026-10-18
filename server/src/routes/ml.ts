@@ -3,12 +3,13 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { MLSemanticClassifier } from '../firewall/mlClassifier.js';
+import { getDataDir, getModelsDir, getRootDir } from '../config.js';
 
 export const mlRouter = Router();
 
 // Helper to locate python binary (.venv or system)
 function getPythonExecutable(): string {
-  const rootDir = path.resolve(process.cwd(), '..');
+  const rootDir = getRootDir();
   const venvPythonWin = path.join(rootDir, '.venv', 'Scripts', 'python.exe');
   const venvPythonUnix = path.join(rootDir, '.venv', 'bin', 'python');
   if (fs.existsSync(venvPythonWin)) return `"${venvPythonWin}"`;
@@ -32,7 +33,7 @@ mlRouter.get('/status', (_req: Request, res: Response) => {
     demonstration: 40,
   };
 
-  const dataDir = path.resolve(process.cwd(), '../data');
+  const dataDir = getDataDir();
   const metaFile = path.join(dataDir, 'training_metadata.json');
   if (fs.existsSync(metaFile)) {
     try {
@@ -62,7 +63,7 @@ mlRouter.get('/status', (_req: Request, res: Response) => {
  */
 mlRouter.get('/demonstration-cases', (_req: Request, res: Response) => {
   const classifier = MLSemanticClassifier.getInstance();
-  const demoPath = path.resolve(process.cwd(), '../data/demonstration_40.json');
+  const demoPath = path.join(getDataDir(), 'demonstration_40.json');
 
   if (!fs.existsSync(demoPath)) {
     return res.status(404).json({ error: 'Demonstration cases dataset not found' });
@@ -125,7 +126,7 @@ function max(a: number, b: number) {
  * Returns held-out evaluation report, confusion matrix, and per-category metrics.
  */
 mlRouter.get('/evaluation', (_req: Request, res: Response) => {
-  const reportPath = path.resolve(process.cwd(), '../models/aegisguard-classifier/evaluation_report.json');
+  const reportPath = path.join(getModelsDir(), 'aegisguard-classifier', 'evaluation_report.json');
   if (fs.existsSync(reportPath)) {
     try {
       const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
@@ -158,7 +159,7 @@ mlRouter.post('/classify', (req: Request, res: Response) => {
  */
 mlRouter.post('/train', (_req: Request, res: Response) => {
   const pythonCmd = getPythonExecutable();
-  const rootDir = path.resolve(process.cwd(), '..');
+  const rootDir = getRootDir();
   const trainCmd = `${pythonCmd} -m training.train`;
 
   console.log(`[AEGISGUARD ML] Triggering training process: ${trainCmd} in ${rootDir}`);

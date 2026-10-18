@@ -1,14 +1,15 @@
 services:
   - type: web
     name: aegisguard-firewall
-    runtime: docker
-    dockerfilePath: Dockerfile
+    runtime: node
     plan: free
+    buildCommand: npm install && npm run build:server
+    startCommand: node server/dist/index.js
     healthCheckPath: /api/health
     envVars:
-      - key: PORT
-        value: 4000
       - key: NODE_ENV
         value: production
       - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
         sync: false
